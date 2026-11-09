@@ -1,0 +1,99 @@
+services:
+  product-db:
+    image: postgres
+    container_name: product-db
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: productdb
+    ports:
+      - "5433:5432"
+    networks:
+      - amazon-clone-net
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - amazon-clone-net
+
+
+  user-db:
+    image: postgres
+    container_name: user-db
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: userdb
+    ports:
+      - "5434:5432"
+    networks:
+      - amazon-clone-net
+
+  cart-db:
+    image: postgres
+    container_name: cart-db
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cartdb
+    ports:
+      - "5435:5432"
+    networks:
+      - amazon-clone-net
+
+  product-service:
+    build: ./product-service
+    container_name: product-service-container
+    depends_on:
+      - product-db
+      - redis
+    environment:
+      REDIS_HOST: redis
+      DB_URL: jdbc:postgresql://product-db:5432/productdb
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "8081:8080"
+    networks:
+      - amazon-clone-net
+
+  user-service:
+    build: ./user-service
+    container_name: user-service-container
+    depends_on:
+      - user-db
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "8082:8080"
+    networks:
+      - amazon-clone-net
+
+  cart-service:
+    build: ./cart-service
+    container_name: cart-service-container
+    depends_on:
+      - cart-db
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://cart-db:5432/cartdb
+      PRODUCT_SERVICE_URL: http://product-service:8080
+      JWT_SECRET: ${JWT_SECRET}      
+    ports:
+      - "8083:8080"
+    networks:
+      - amazon-clone-net
+
+  order-db:
+    image: postgres
+    container_name: order-db
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: orderdb
+    ports:
+      - "5436:5432"
+    networks:
+      - amazon-clone-net
+      
+networks:
+  amazon-clone-net:
+    driver: bridge
