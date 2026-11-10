@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 @Service
 public class ProductService {
     @Autowired
@@ -18,9 +21,10 @@ public class ProductService {
     public Product createProduct(Product product) {
         return productRepository.save(product);
     }
-    public List<Product> getAllProducts(){
-        return productRepository.findAll();
+    public Page<Product> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable);
     }
+
     @Cacheable(value = "products", key = "#id")
     public Product getProductByID(Long id){
         return productRepository.findById(id).orElseThrow(()->new ProductNotFoundException("Product not found with id:"+id));

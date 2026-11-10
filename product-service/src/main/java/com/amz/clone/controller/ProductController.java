@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/api/products")
@@ -21,8 +24,8 @@ public class ProductController {
 }
 
 @GetMapping
-    public List<Product> getAllProducts(){
-    return productService.getAllProducts();
+    public PagedModel<Product> getAllProducts(@PageableDefault(size = 10, sort="id")Pageable pageable){
+    return new PagedModel<>(productService.getAllProducts(pageable));
 }
 
 @GetMapping("/{id}")
